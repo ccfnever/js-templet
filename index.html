@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>一个简单的模板引擎</title>
+</head>
+<body>
+    
+</body>
+
+<script>
+    
+function Template(tpl) {
+    var
+        fn,
+        match,
+        code = ['var r=[];\n'],
+        re = /\{\{\s*([a-zA-Z\.\_0-9]+)\s*\}\}/m,
+        // reExp = /(^( )?( if | for | else | switch | case | break |{|}))(.*)?/g,
+        addLine = function (text) {
+            code.push('r.push(\'' + text.replace(/\'/g, '\\"').replace(/\n/g, '\\n').replace(/\r/g, '\\r') + '\');');
+        };
+    while (match = re.exec(tpl)) {
+        if (match.index > 0) {
+            addLine(tpl.slice(0, match.index));
+        }
+        code.push('r.push(this.' + match[1] + ');');
+        tpl = tpl.substring(match.index + match[0].length);
+    }
+
+    addLine(tpl);
+    code.push('return r.join(\'\');');
+    fn = new Function(code.join('\n'));
+    this.render = function (model) {
+        return fn.apply(model);
+    };
+}
+</script>
+<script id="tpl" type="text/plain">
+    <p>宝宝{{ date }}</p>
+    <a href="{{ ask.url }}">{{ ask.content }}</a>
+</script>
+
+<script>
+    var tpl = new Template(document.querySelector('#tpl').innerHTML);
+    var html = tpl.render({
+        date: '心里苦',
+        ask: {
+            url: 'http://baike.baidu.com/link?url=fxEGRD8pNCZmi4UeJkjDY-FXmjXXjpiPrtkGE8d6Hr1fYfOUPfGI69QFi1_2ox4tIyeafiHvgbH-PsKtzw0xLc-amo8znEZAL1acIdMF-0jLLYf2jdHkzEXdx8z_b3V-',
+            content: '自称宝宝是一种病'
+        }
+    });
+    document.querySelector('body').innerHTML = html;
+</script>
+</html>
